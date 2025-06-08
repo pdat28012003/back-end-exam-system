@@ -1,0 +1,67 @@
+Các chức năng chính của hệ thống thi trực tuyến:
+1️⃣ Trang cho Thí sinh:
+Quản lý tài khoản:
+
+Đăng nhập (email, username, SSO)
+Đăng ký tài khoản mới
+Cập nhật thông tin cá nhân
+Đổi mật khẩu
+Quản lý kỳ thi:
+
+Xem danh sách kỳ thi có thể tham gia
+Xem thông tin chi tiết kỳ thi
+Xem lịch sử thi đã hoàn thành
+Làm bài thi:
+
+Hiển thị câu hỏi (trắc nghiệm/tự luận)
+Bộ đếm thời gian
+Chuyển qua lại giữa các câu hỏi
+Nộp bài thi
+Xem kết quả:
+
+Hiển thị điểm số
+Hiển thị đáp án đúng/sai
+Phân tích kết quả
+Thông báo:
+
+Nhận thông báo từ hệ thống
+2️⃣ Trang quản lý cho Admin:
+Quản lý người dùng:
+
+Quản lý danh sách thí sinh (thêm/sửa/xóa)
+Reset mật khẩu
+Phân quyền người dùng (Admin, Giáo viên, Thí sinh)
+Quản lý kỳ thi:
+
+Tạo mới kỳ thi
+Cấu hình thông số kỳ thi
+Quản lý trạng thái kỳ thi
+Quản lý câu hỏi:
+
+Thêm/sửa/xóa câu hỏi
+Phân loại câu hỏi
+Hỗ trợ nhiều loại câu hỏi khác nhau
+Quản lý đề thi:
+
+Tạo đề thi từ ngân hàng câu hỏi
+Đảo câu hỏi/đáp án tự động
+Xem trước đề thi
+Quản lý kết quả:
+
+Xem kết quả thi của từng thí sinh
+Xuất báo cáo (PDF, Excel)
+Phân tích thống kê
+Dashboard thống kê:
+
+Hiển thị số lượng kỳ thi
+Hiển thị số lượng thí sinh
+Hiển thị tỉ lệ đậu/rớt
+Hiển thị thông tin kỳ thi sắp tới
+Dựa vào các chức năng trên, bạn có thể cân nhắc các yếu tố sau khi chọn công nghệ:
+
+Xử lý real-time: Cần cho bộ đếm thời gian, thông báo
+Bảo mật: Hệ thống xác thực, phân quyền
+Khả năng mở rộng: Số lượng người dùng đồng thời, lưu trữ dữ liệu lớn
+Tương tác UI: Giao diện làm bài thi cần mượt mà, thân thiện
+Xuất báo cáo: Khả năng tạo và xuất báo cáo dưới nhiều định dạng
+Phân tích dữ liệu: Thống kê, biểu đồ kết quả
