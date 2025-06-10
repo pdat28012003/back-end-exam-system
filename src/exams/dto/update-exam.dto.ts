@@ -5,12 +5,13 @@ export class UpdateExamDto {
   description?: string;
   subject?: string;
   duration?: number;
-  startTime?: Date;
-  endTime?: Date;
+  startDate?: Date;
+  endDate?: Date;
   type?: ExamType;
   status?: ExamStatus;
   passingScore?: number;
   maxAttempts?: number;
-  isRandomized?: boolean;
+  shuffleQuestions?: boolean;
+  shuffleOptions?: boolean;
   showResults?: boolean;
 }

@@ -30,6 +30,23 @@ export class SubmissionsService {
     const exam = await this.examsService.findById(createSubmissionDto.examId);
     await this.usersService.findById(createSubmissionDto.userId);
 
+    // Kiểm tra thời gian làm bài
+    const now = new Date();
+
+    // Kiểm tra xem bài thi đã bắt đầu chưa
+    if (now < exam.startDate) {
+      throw new BadRequestException(
+        `Bài thi chưa bắt đầu. Thời gian bắt đầu: ${exam.startDate.toLocaleString()}`,
+      );
+    }
+
+    // Kiểm tra xem bài thi đã kết thúc chưa
+    if (now > exam.endDate) {
+      throw new BadRequestException(
+        `Bài thi đã kết thúc. Thời gian kết thúc: ${exam.endDate.toLocaleString()}`,
+      );
+    }
+
     // Kiểm tra xem người dùng đã nộp bài thi này bao nhiêu lần
     const submissionCount = await this.submissionModel.countDocuments({
       exam: createSubmissionDto.examId,
@@ -43,9 +60,16 @@ export class SubmissionsService {
       );
     }
 
-    const newSubmission = new this.submissionModel(createSubmissionDto);
+    // Ánh xạ từ DTO sang schema
+    const submissionData = {
+      ...createSubmissionDto,
+      student: createSubmissionDto.userId,
+      exam: createSubmissionDto.examId,
+    };
 
-    // Nếu trạng thái là COMPLETED, tự động chấm điểm cho các câu hỏi trắc nghiệm
+    const newSubmission = new this.submissionModel(submissionData);
+
+    // Nếu trạng thái là COMPLETED, tự động chấm điểm cho các câu hỏi
     if (createSubmissionDto.status === SubmissionStatus.COMPLETED) {
       await this.autoGradeSubmission(newSubmission);
     }
@@ -92,13 +116,31 @@ export class SubmissionsService {
       throw new NotFoundException(`Không tìm thấy bài nộp với ID: ${id}`);
     }
 
-    // Nếu trạng thái thay đổi từ IN_PROGRESS sang COMPLETED, tự động chấm điểm
+    // Nếu trạng thái thay đổi từ IN_PROGRESS sang COMPLETED, kiểm tra thời gian và tự động chấm điểm
     if (
       submission.status === SubmissionStatus.IN_PROGRESS &&
       updateSubmissionDto.status === SubmissionStatus.COMPLETED
     ) {
-      // Cập nhật các trường khác trước
+      // Lấy thông tin bài thi
+      const exam = await this.examsService.findById(submission.exam.toString());
+
+      // Kiểm tra thời gian làm bài
+      const now = new Date();
+
+      // Kiểm tra xem bài thi đã kết thúc chưa
+      if (now > exam.endDate) {
+        throw new BadRequestException(
+          `Bài thi đã kết thúc. Không thể nộp bài sau thời gian kết thúc: ${exam.endDate.toLocaleString()}`,
+        );
+      }
+
+      // Cập nhật thời gian kết thúc làm bài
+      updateSubmissionDto.endTime = now;
+
+      // Cập nhật các trường khác
       Object.assign(submission, updateSubmissionDto);
+
+      // Tự động chấm điểm
       await this.autoGradeSubmission(submission);
     } else {
       Object.assign(submission, updateSubmissionDto);
@@ -138,24 +180,85 @@ export class SubmissionsService {
 
       totalPoints += question.points;
 
-      // Chỉ tự động chấm điểm cho câu hỏi trắc nghiệm
-      if (question.type === QuestionType.MULTIPLE_CHOICE) {
-        // Lấy các lựa chọn đúng
-        const correctOptions = question.options
-          .filter((opt) => opt.isCorrect)
-          .map((opt) => opt._id && opt._id.toString());
+      // Tự động chấm điểm cho các loại câu hỏi khác nhau
+      switch (question.type) {
+        case QuestionType.MULTIPLE_CHOICE:
+          // Lấy các lựa chọn đúng
+          const correctOptions = question.options
+            .filter((opt) => opt.isCorrect)
+            .map((opt) => opt._id && opt._id.toString());
 
-        // Lấy các lựa chọn của người dùng
-        const selectedOptions = answer.selectedOptions || [];
+          // Lấy các lựa chọn của người dùng
+          const selectedOptions = answer.selectedOptions || [];
 
-        // So sánh các lựa chọn
-        const isCorrect =
-          correctOptions.length === selectedOptions.length &&
-          correctOptions.every((opt) => selectedOptions.includes(opt));
+          // So sánh các lựa chọn - phải chọn đúng tất cả các đáp án đúng
+          const isCorrectMultiple =
+            correctOptions.length === selectedOptions.length &&
+            correctOptions.every((opt) => selectedOptions.includes(opt));
 
-        if (isCorrect) {
-          totalScore += question.points;
-        }
+          if (isCorrectMultiple) {
+            totalScore += question.points;
+          }
+          break;
+
+        case QuestionType.SINGLE_CHOICE:
+          // Lấy lựa chọn đúng duy nhất
+          const correctOption = question.options.find((opt) => opt.isCorrect);
+
+          // Lấy lựa chọn của người dùng
+          const selectedOption =
+            answer.selectedOptions && answer.selectedOptions.length > 0
+              ? answer.selectedOptions[0]
+              : null;
+
+          // So sánh lựa chọn - chỉ cần chọn đúng đáp án đúng duy nhất
+          if (
+            correctOption &&
+            selectedOption &&
+            correctOption._id &&
+            correctOption._id.toString() === selectedOption
+          ) {
+            totalScore += question.points;
+          }
+          break;
+
+        case QuestionType.TRUE_FALSE:
+          // TRUE_FALSE cũng là một dạng SINGLE_CHOICE, xử lý tương tự
+          const correctTrueFalse = question.options.find(
+            (opt) => opt.isCorrect,
+          );
+
+          const selectedTrueFalse =
+            answer.selectedOptions && answer.selectedOptions.length > 0
+              ? answer.selectedOptions[0]
+              : null;
+
+          if (
+            correctTrueFalse &&
+            selectedTrueFalse &&
+            correctTrueFalse._id &&
+            correctTrueFalse._id.toString() === selectedTrueFalse
+          ) {
+            totalScore += question.points;
+          }
+          break;
+
+        case QuestionType.FILL_IN_BLANK:
+          // Đối với câu hỏi điền vào chỗ trống, so sánh câu trả lời với đáp án đúng
+          if (
+            question.correctAnswer &&
+            answer.textAnswer &&
+            question.correctAnswer.trim().toLowerCase() ===
+              answer.textAnswer.trim().toLowerCase()
+          ) {
+            totalScore += question.points;
+          }
+          break;
+
+        // Các loại câu hỏi khác như ESSAY, MATCHING cần giáo viên chấm điểm thủ công
+        default:
+          // Không tự động chấm điểm
+          break;
       }
     }
 

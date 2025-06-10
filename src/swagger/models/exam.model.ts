@@ -36,13 +36,13 @@ export class ExamModel {
     description: 'Thời gian bắt đầu',
     example: '2023-06-21T09:00:00.000Z',
   })
-  startTime: Date;
+  startDate: Date;
 
   @ApiProperty({
     description: 'Thời gian kết thúc',
     example: '2023-06-21T17:00:00.000Z',
   })
-  endTime: Date;
+  endDate: Date;
 
   @ApiProperty({
     description: 'Loại bài thi',
@@ -83,7 +83,14 @@ export class ExamModel {
     example: false,
     required: false,
   })
-  isRandomized?: boolean;
+  shuffleQuestions?: boolean;
+
+  @ApiProperty({
+    description: 'Xáo trộn các lựa chọn trong câu hỏi',
+    example: false,
+    required: false,
+  })
+  shuffleOptions?: boolean;
 
   @ApiProperty({
     description: 'Hiển thị kết quả ngay sau khi nộp bài',

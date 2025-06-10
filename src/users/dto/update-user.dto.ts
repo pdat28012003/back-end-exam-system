@@ -1,5 +1,14 @@
-import { IsString, IsEmail, MinLength, IsEnum, IsOptional, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  MinLength,
+  IsEnum,
+  IsOptional,
+  IsBoolean,
+  IsDate,
+} from 'class-validator';
 import { UserRole } from '../../database/schemas/user.schema';
+import { Type } from 'class-transformer';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -27,4 +36,9 @@ export class UpdateUserDto {
   @IsOptional()
   @IsBoolean({ message: 'Trạng thái hoạt động phải là boolean' })
   isActive?: boolean;
+
+  @IsOptional()
+  @IsDate({ message: 'Thời gian đăng nhập cuối cùng phải là ngày' })
+  @Type(() => Date)
+  lastLogin?: Date;
 }

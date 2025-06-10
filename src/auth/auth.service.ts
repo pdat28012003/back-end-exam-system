@@ -47,16 +47,26 @@ export class AuthService {
       throw new UnauthorizedException('Tài khoản của bạn đã bị vô hiệu hóa');
     }
 
-    const payload = { sub: user._id, username: user.username, role: user.role };
+    // Cập nhật thời gian đăng nhập cuối cùng
+    const now = new Date();
+
+    // Sử dụng Document.id thay vì _id để lấy id dưới dạng string
+    const userId = user.id;
+
+    // Cập nhật thời gian đăng nhập cuối cùng trong cơ sở dữ liệu
+    await this.usersService.update(userId, { lastLogin: now });
+
+    const payload = { sub: user.id, username: user.username, role: user.role };
 
     return {
       access_token: this.jwtService.sign(payload),
       user: {
-        _id: user._id,
+        _id: user.id,
         username: user.username,
         email: user.email,
         fullName: user.fullName,
         role: user.role,
+        lastLogin: now,
       },
     };
   }

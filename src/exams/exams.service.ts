@@ -16,7 +16,7 @@ export class ExamsService {
   async create(createExamDto: CreateExamDto): Promise<Exam> {
     // Kiểm tra xem người tạo có tồn tại không
     await this.usersService.findById(createExamDto.createdBy);
-    
+
     const newExam = new this.examModel(createExamDto);
     return newExam.save();
   }
@@ -27,11 +27,11 @@ export class ExamsService {
 
   async findById(id: string): Promise<Exam> {
     const exam = await this.examModel.findById(id).exec();
-    
+
     if (!exam) {
       throw new NotFoundException(`Không tìm thấy bài thi với ID: ${id}`);
     }
-    
+
     return exam;
   }
 
@@ -39,21 +39,21 @@ export class ExamsService {
     const updatedExam = await this.examModel
       .findByIdAndUpdate(id, updateExamDto, { new: true })
       .exec();
-    
+
     if (!updatedExam) {
       throw new NotFoundException(`Không tìm thấy bài thi với ID: ${id}`);
     }
-    
+
     return updatedExam;
   }
 
   async remove(id: string): Promise<Exam> {
     const deletedExam = await this.examModel.findByIdAndDelete(id).exec();
-    
+
     if (!deletedExam) {
       throw new NotFoundException(`Không tìm thấy bài thi với ID: ${id}`);
     }
-    
+
     return deletedExam;
   }
 
@@ -70,8 +70,8 @@ export class ExamsService {
     return this.examModel
       .find({
         status: ExamStatus.PUBLISHED,
-        startTime: { $lte: now },
-        endTime: { $gte: now },
+        startDate: { $lte: now },
+        endDate: { $gte: now },
       })
       .exec();
   }
@@ -81,7 +81,7 @@ export class ExamsService {
     return this.examModel
       .find({
         status: ExamStatus.PUBLISHED,
-        startTime: { $gt: now },
+        startDate: { $gt: now },
       })
       .exec();
   }

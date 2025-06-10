@@ -53,7 +53,7 @@ export class CreateExamDto {
   })
   @Type(() => Date)
   @IsDate({ message: 'Thời gian bắt đầu phải là ngày' })
-  startTime: Date;
+  startDate: Date;
 
   @ApiProperty({
     description: 'Thời gian kết thúc',
@@ -61,7 +61,7 @@ export class CreateExamDto {
   })
   @Type(() => Date)
   @IsDate({ message: 'Thời gian kết thúc phải là ngày' })
-  endTime: Date;
+  endDate: Date;
 
   @ApiProperty({
     description: 'Loại bài thi',
@@ -114,7 +114,16 @@ export class CreateExamDto {
   })
   @IsOptional()
   @IsBoolean({ message: 'Xáo trộn câu hỏi phải là boolean' })
-  isRandomized?: boolean;
+  shuffleQuestions?: boolean;
+
+  @ApiProperty({
+    description: 'Xáo trộn các lựa chọn trong câu hỏi',
+    default: false,
+    example: false,
+  })
+  @IsOptional()
+  @IsBoolean({ message: 'Xáo trộn các lựa chọn phải là boolean' })
+  shuffleOptions?: boolean;
 
   @ApiProperty({
     description: 'Hiển thị kết quả ngay sau khi nộp bài',

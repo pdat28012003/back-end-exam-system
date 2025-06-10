@@ -67,6 +67,12 @@ export class Question extends Document {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
   createdBy: User;
 
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Exam', required: true })
+  examId: MongooseSchema.Types.ObjectId;
+
+  @Prop({ default: 1 })
+  order: number;
+
   @Prop()
   image?: string;
 
